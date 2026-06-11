@@ -1,248 +1,627 @@
-# YouTube RAG Chatbot Project Plan
+# Project Plan
 
-## Project Goal
+This file is the step-by-step phase roadmap for the YouTube RAG Chatbot Chrome Extension.
 
-Build a YouTube RAG Chatbot step by step as a learning project.
+The main purpose of this project is learning. We will build one phase at a time, understand it, document it, commit it, and only then move forward.
 
-The app will let a user work with YouTube video content and ask questions using a retrieval-augmented generation workflow. The project should be built in clear phases so each part can be understood before moving to the next one.
+For architecture details, see `ARCHITECTURE.md`.
 
-## Learning First Approach
+For performance, security, logging, and MVP requirements, see `REQUIREMENTS.md`.
 
-The main purpose of this project is learning.
+For coding rules and project discipline, see `IMPLEMENTATION_RULES.md`.
 
-Each phase should be small, explainable, and committed separately. Do not rush into advanced features before the foundation is understood. Prefer simple, readable code over clever abstractions.
+## Phase Workflow
 
 Before starting a new phase:
 
-1. Review what was built in the previous phase.
-2. Confirm that the current code runs.
-3. Add or update the milestone README.
+1. Review what the previous phase did.
+2. Confirm the current code runs.
+3. Update the relevant README.
 4. Create a Git commit for the completed phase.
+5. Only then move to the next phase.
 
-## Major Components
+## MVP Boundary
+
+Build only through Phase 9 first.
+
+Phases 10 through 15 are enhancements after the MVP is stable.
+
+## Phase 0: Project Setup
+
+### Goal
+
+Create the base project structure.
 
 ### Backend
 
-Technology: Python 3.12+ and FastAPI.
+Create a FastAPI application.
 
-Responsibilities:
+Endpoint:
 
-- Provide API routes for the frontend and extension.
-- Handle YouTube transcript ingestion.
-- Prepare text chunks for retrieval.
-- Store and search embeddings.
-- Coordinate chatbot responses.
-- Keep secrets in environment variables.
+```http
+GET /health
+```
 
-Architecture:
+Response:
 
-- `routes`: HTTP API endpoints.
-- `services`: application logic.
-- `models`: request and response schemas.
+```json
+{
+  "status": "ok"
+}
+```
 
-### Frontend
+### Extension
 
-Technology: React + Vite.
+Create popup UI.
 
-Responsibilities:
+Display:
 
-- Provide the main user interface.
-- Let the user submit a YouTube video URL.
-- Show transcript or processing status.
-- Let the user ask questions.
-- Display chatbot answers clearly.
+```text
+YouTube RAG Chatbot
+```
 
-### Browser Extension
+### Deliverable
 
-Technology: Manifest V3.
+- Frontend runs.
+- Backend runs.
+- Health endpoint works.
 
-Responsibilities:
+### Learning Focus
 
-- Connect the project to YouTube pages.
-- Detect the current video page.
-- Send video information to the backend or frontend.
-- Provide a lightweight extension interface.
+- Understand the project folders.
+- Understand how the extension, frontend, and backend will communicate.
+- Understand the first FastAPI route.
 
-## Milestones
+## Phase 1: Detect Current YouTube Video
 
-### Milestone 1: Project Setup
+### Goal
 
-Goal: Create the basic project structure.
+Detect the currently opened YouTube video.
 
-Deliverables:
+Example:
 
-- Backend scaffold.
-- Frontend scaffold.
-- Extension scaffold.
-- Project plan.
-- Implementation rules.
-- Initial README files.
+```text
+https://youtube.com/watch?v=abc123
+```
 
-Learning focus:
+Extract:
 
-- Understand the folder structure.
-- Understand how backend, frontend, and extension will fit together.
+```text
+abc123
+```
 
-### Milestone 2: Backend Health API
+### Deliverable
 
-Goal: Run the FastAPI backend and verify a basic API route.
+Popup displays:
 
-Deliverables:
+```text
+Current Video ID:
+abc123
+```
 
-- Working FastAPI app.
-- Health check route.
-- Backend README with setup instructions.
+### Learning Focus
 
-Learning focus:
+- Understand YouTube video URLs.
+- Understand content scripts and browser tab access.
+- Learn how Manifest V3 permissions work.
 
-- FastAPI application structure.
-- Routes, services, and models.
-- Python type hints.
+## Phase 2: Transcript Retrieval
 
-### Milestone 3: Frontend App Shell
+### Goal
 
-Goal: Run the React + Vite frontend and connect it to the backend health API.
+Retrieve the transcript using the backend.
 
-Deliverables:
+Install:
 
-- Working Vite app.
-- Basic app layout.
-- API call to backend health route.
-- Frontend README with setup instructions.
+```bash
+pip install youtube-transcript-api
+```
 
-Learning focus:
+Endpoint:
 
-- React components.
-- Vite project structure.
-- Frontend-to-backend communication.
+```http
+POST /transcript
+```
 
-### Milestone 4: Extension App Shell
+Request:
 
-Goal: Create a basic Manifest V3 extension.
+```json
+{
+  "videoId": "abc123"
+}
+```
 
-Deliverables:
+Response:
 
-- `manifest.json`.
-- Popup UI.
-- Content script for YouTube pages.
-- Extension README with loading instructions.
+```json
+{
+  "success": true,
+  "transcript": "..."
+}
+```
 
-Learning focus:
+### Transcript Rules
 
-- Manifest V3 structure.
-- Browser extension permissions.
-- Content scripts and popup scripts.
+1. Prefer English.
+2. Fallback to an available language.
+3. Handle transcript unavailable cases.
+4. Return meaningful error messages.
 
-### Milestone 5: YouTube Transcript Ingestion
+### Deliverable
 
-Goal: Accept a YouTube URL and retrieve transcript text.
+- Transcript successfully loads.
 
-Deliverables:
+### Learning Focus
 
-- Backend route for submitting a video URL.
-- Transcript service.
-- Transcript response model.
-- Basic error handling.
+- Understand backend service logic.
+- Understand API request and response models.
+- Learn how to handle external API failures.
 
-Learning focus:
+## Phase 3: Basic AI Chat Without RAG
 
-- API request and response design.
-- Separating route logic from service logic.
-- Handling external data safely.
+### Goal
 
-### Milestone 6: Chunking and Storage
+Validate the product idea before adding the full RAG pipeline.
 
-Goal: Split transcript text into searchable chunks.
+Flow:
 
-Deliverables:
+```text
+Video
+  |
+  v
+Transcript
+  |
+  v
+Gemini
+  |
+  v
+Answer
+```
 
-- Chunking service.
-- Chunk models.
-- Simple local storage approach.
+Endpoint:
 
-Learning focus:
+```http
+POST /chat
+```
 
-- Why chunking matters in RAG.
-- Designing data models.
-- Keeping logic testable.
+Request:
 
-### Milestone 7: Embeddings and Retrieval
+```json
+{
+  "videoId": "abc123",
+  "question": "What is this video about?"
+}
+```
 
-Goal: Convert chunks into embeddings and retrieve relevant chunks for a question.
+Prompt:
 
-Deliverables:
+```text
+Answer ONLY from the transcript.
 
-- Embedding service.
-- Retrieval service.
-- Environment variable setup for secrets.
+If information is not available, say:
 
-Learning focus:
+"I couldn't find that information in the transcript."
 
-- What embeddings are.
-- How similarity search works.
-- How to keep API keys out of source code.
+Transcript:
+{transcript}
 
-### Milestone 8: Chatbot Answers
+Question:
+{question}
+```
 
-Goal: Generate answers using retrieved transcript context.
+### Deliverable
 
-Deliverables:
+- Working chatbot using the full transcript as context.
 
-- Chat route.
-- Chat service.
-- Request and response models.
-- Frontend chat interface.
+### Learning Focus
 
-Learning focus:
+- Understand prompt construction.
+- Understand why strict transcript-only answering matters.
+- Learn the limitation of sending the full transcript directly.
 
-- Retrieval-augmented generation flow.
-- Prompt construction.
-- User-facing answer design.
+## Phase 4: Better Chat UI
 
-### Milestone 9: Extension Integration
+### Features
 
-Goal: Let the extension pass the current YouTube video to the app.
+- Chat bubbles.
+- Loading state.
+- Error state.
+- Typing indicator.
+- Markdown rendering.
+- Auto scroll.
+- Clear chat button.
 
-Deliverables:
+### Deliverable
 
-- Extension detects YouTube video URL.
-- Popup sends video URL to the app.
-- Frontend or backend receives video information.
+- ChatGPT-like chat experience.
 
-Learning focus:
+### Learning Focus
 
-- Extension-to-app communication.
-- Browser APIs.
-- End-to-end workflow.
+- Understand frontend state.
+- Learn how to display async API responses.
+- Improve user feedback during loading and errors.
 
-### Milestone 10: Polish, Tests, and Documentation
+## Phase 5: Chunking
 
-Goal: Make the project easier to run, understand, and maintain.
+### Goal
 
-Deliverables:
+Prepare the transcript for RAG.
 
-- Focused tests for backend services.
-- Clear root README.
-- Updated milestone READMEs.
-- Cleanup of rough edges.
+Configuration:
 
-Learning focus:
+```text
+Chunk Size: 1000
+Chunk Overlap: 200
+```
 
-- Testing service logic.
-- Documentation habits.
-- Preparing a project for future improvement.
+Metadata:
 
-## Development Rhythm
+```json
+{
+  "videoId": "...",
+  "chunkId": "...",
+  "text": "...",
+  "startTime": 123
+}
+```
 
-Work one milestone at a time.
+### Deliverable
 
-For each milestone:
+- Transcript is converted into chunks.
 
-1. Explain the goal.
-2. Build the smallest useful version.
-3. Run it.
-4. Fix obvious issues.
-5. Update the relevant README.
-6. Create a Git commit.
-7. Review what was learned before moving on.
+### Learning Focus
+
+- Understand why chunking is needed.
+- Learn how overlap helps preserve context.
+- Design chunk data models.
+
+## Phase 6: Embeddings
+
+### Goal
+
+Generate embeddings for transcript chunks.
+
+Service:
+
+```python
+EmbeddingService
+```
+
+Flow:
+
+```text
+Chunk
+  |
+  v
+Embedding
+```
+
+### Deliverable
+
+- Embeddings are generated successfully.
+
+### Learning Focus
+
+- Understand what embeddings are.
+- Learn how text becomes searchable vectors.
+- Keep API keys and secrets in environment variables.
+
+## Phase 7: FAISS Index
+
+### Goal
+
+Store embeddings in a FAISS index.
+
+Service:
+
+```python
+VectorStoreService
+```
+
+Functions:
+
+```python
+create_index()
+add_documents()
+search()
+save()
+load()
+```
+
+### Deliverable
+
+- FAISS index is created successfully.
+
+### Learning Focus
+
+- Understand vector indexes.
+- Learn how embeddings are stored and searched.
+- Learn why save/load matters for performance.
+
+## Phase 8: Retrieval Testing
+
+### Goal
+
+Verify retrieval before using Gemini.
+
+Flow:
+
+```text
+Question
+  |
+  v
+Embedding
+  |
+  v
+FAISS Search
+  |
+  v
+Top K Chunks
+```
+
+Configuration:
+
+```text
+Top K = 5
+```
+
+Debug endpoint:
+
+```http
+POST /retrieve
+```
+
+Response:
+
+```json
+{
+  "chunks": []
+}
+```
+
+### Deliverable
+
+- Relevant chunks are returned correctly.
+
+### Learning Focus
+
+- Understand retrieval before generation.
+- Learn how to inspect retrieved chunks.
+- Debug answer quality at the retrieval layer.
+
+## Phase 9: Full RAG Chat
+
+### Goal
+
+Combine retrieval with Gemini.
+
+Flow:
+
+```text
+Question
+  |
+  v
+Embedding
+  |
+  v
+Retrieve Chunks
+  |
+  v
+Gemini
+  |
+  v
+Answer
+```
+
+Prompt:
+
+```text
+You are a YouTube video assistant.
+
+Use ONLY the provided context.
+
+If answer is not present, say:
+
+"I couldn't find that information in the transcript."
+
+Context:
+{chunks}
+
+Question:
+{question}
+```
+
+### Deliverable
+
+- Fully working RAG chatbot.
+
+### Learning Focus
+
+- Understand the full RAG loop.
+- Learn how retrieval improves prompt size and relevance.
+- Compare full-transcript chat with RAG chat.
+
+## Phase 10: Timestamp Support
+
+### Goal
+
+Support timestamp citations.
+
+Metadata:
+
+```json
+{
+  "startTime": 340,
+  "endTime": 360
+}
+```
+
+Example response:
+
+```text
+The speaker discusses React Hooks around 05:40.
+```
+
+Clickable timestamp:
+
+```text
+youtube.com/watch?v=xxx&t=340s
+```
+
+### Deliverable
+
+- Clickable timestamps.
+
+### Learning Focus
+
+- Understand citation metadata.
+- Learn how transcript times map to YouTube links.
+
+## Phase 11: Auto Reindex On Video Change
+
+### Goal
+
+Handle YouTube single-page app navigation.
+
+Flow:
+
+```text
+Video A
+  |
+  v
+Video B
+```
+
+Automatically:
+
+```text
+Clear old chat
+Load transcript
+Create embeddings
+Re-index
+Ready
+```
+
+### Deliverable
+
+- Video changes work without a page refresh.
+
+### Learning Focus
+
+- Understand YouTube SPA navigation.
+- Learn how to detect URL changes in a content script.
+
+## Phase 12: Caching
+
+### Goal
+
+Avoid re-indexing the same video.
+
+Cache by:
+
+```text
+videoId
+```
+
+Store:
+
+```text
+Transcript
+Chunks
+Embeddings
+FAISS Index
+```
+
+Flow:
+
+```text
+Already Indexed?
+  |-- Yes -> Load Cache
+  `-- No  -> Create Index
+```
+
+### Deliverable
+
+- Fast reloads for previously indexed videos.
+
+### Learning Focus
+
+- Understand cache keys.
+- Learn how caching improves user experience.
+- Learn when cached data should be invalidated.
+
+## Phase 13: Chat History
+
+### Goal
+
+Restore chat history after reopening the extension.
+
+Store:
+
+```json
+{
+  "videoId": "...",
+  "question": "...",
+  "answer": "...",
+  "timestamp": "..."
+}
+```
+
+### Deliverable
+
+- History is restored after reopening the extension.
+
+### Learning Focus
+
+- Understand local persistence.
+- Learn how chat history relates to video IDs.
+
+## Phase 14: Advanced RAG
+
+### Features
+
+- Hybrid retrieval.
+- Metadata filtering.
+- Reranking.
+- Context compression.
+- Conversation memory.
+- Citation generation.
+
+### Deliverable
+
+- Higher answer quality.
+
+### Learning Focus
+
+- Learn common RAG quality improvements.
+- Understand when advanced retrieval is worth adding.
+
+## Phase 15: Resume-Worthy Features
+
+### Features
+
+- Video summary.
+- Key takeaways.
+- Study notes.
+- Quiz mode.
+- Multi-video knowledge base.
+
+Example prompts:
+
+```text
+Summarize this video
+Give me 10 key takeaways
+Generate notes
+Generate 10 questions from this video
+Compare React Hooks and Redux from all indexed videos
+```
+
+### Deliverable
+
+- Extra features that make the project more polished and portfolio-ready.
+
+### Learning Focus
+
+- Learn how to extend a working product.
+- Understand feature prioritization after the MVP is stable.
 
