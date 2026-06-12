@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube RAG Chatbot",
+  "version": "0.0.1",
+  "description": "Chat with any YouTube video using AI and RAG.",
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "YouTube RAG Chatbot"
+  },
+  "icons": {
+    "16": "favicon.svg",
+    "48": "favicon.svg",
+    "128": "favicon.svg"
+  },
+  "permissions": []
+}
