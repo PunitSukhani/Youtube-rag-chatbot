@@ -7,10 +7,5 @@
     "default_popup": "index.html",
     "default_title": "YouTube RAG Chatbot"
   },
-  "icons": {
-    "16": "favicon.svg",
-    "48": "favicon.svg",
-    "128": "favicon.svg"
-  },
-  "permissions": []
+  "permissions": ["tabs", "activeTab"]
 }
