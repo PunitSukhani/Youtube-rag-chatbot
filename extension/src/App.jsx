@@ -91,7 +91,7 @@ function App() {
       {videoId ? (
         <div className="chat-container">
           <div className="video-banner">
-            <span>Video ID: <strong>{videoId}</strong></span>
+            <span>✓ Transcript Loaded</span>
           </div>
 
           {/* Scrollable list of chat messages */}
