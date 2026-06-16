@@ -96,18 +96,31 @@ FastAPI backend for the YouTube RAG Chatbot.
 ## Core Services
 
 ### Chunking Service (Phase 5)
-Splits raw timed transcript segments into fixed-size overlapping text chunks to prepare for vector index storage.
+Splits raw timed transcript segments into fixed-size overlapping text chunks using LangChain's `Document` model.
 
 * **Configuration**:
   * Chunk Size: `1000` characters
   * Chunk Overlap: `200` characters (slides forward by `800` characters)
-* **Data Model (`app/models/chunk.py`)**:
-  * `videoId`: Identifies which video this chunk belongs to (used for metadata filtering).
-  * `chunkId`: Unique string identifier (`{videoId}_chunk_{index}`).
-  * `text`: The string content (~1000 characters).
-  * `startTime`: Starting timestamp (seconds) mapping back to the first word in the chunk.
+* **Data Model (`langchain_core.documents.Document`)**:
+  * `page_content`: The chunk text content (~1000 characters).
+  * `metadata`:
+    * `videoId`: Identifies which video this chunk belongs to (used for metadata filtering).
+    * `chunkId`: Unique string identifier (`{videoId}_chunk_{index}`).
+    * `startTime`: Starting timestamp (seconds) mapping back to the first word in the chunk.
 * **Hybrid Mapping Strategy**:
   1. Concatenates all individual subtitle lines into a single string.
   2. Records a lookup map matching character indices to native subtitle timestamps (`char_offset_map`).
   3. Slices the string into overlapping windows.
   4. Resolves the exact `startTime` of each chunk by querying the lookup map.
+
+### Embedding Service (Phase 6)
+Generates vector representations of chunks using Google's `gemini-embedding-001` model via LangChain.
+
+* **Configuration**:
+  * Model: `gemini-embedding-001`
+  * Dimension size: `768` (utilizing Matryoshka Representation Learning via the `output_dimensionality` parameter to output compact vectors)
+* **Implementation**:
+  * Integrates `GoogleGenerativeAIEmbeddings` from `langchain-google-genai`.
+  * Passes `GEMINI_API_KEY` explicitly under `google_api_key`.
+  * Provides `embed_text` (single query embedding) and `embed_texts` (batch document embedding).
+

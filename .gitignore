@@ -38,3 +38,6 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Interview Preparation Study Guide (Private)
+INTERVIEW_PREP.md

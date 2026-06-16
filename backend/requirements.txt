@@ -4,3 +4,5 @@ pydantic
 youtube-transcript-api
 google-genai
 python-dotenv
+langchain-core
+langchain-google-genai

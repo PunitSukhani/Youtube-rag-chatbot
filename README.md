@@ -22,5 +22,11 @@ This project should move one phase at a time. Each phase should be understood, d
 
 ## Current Status
 
-Initial backend and frontend scaffolds exist. The extension scaffold still needs to be added as part of Phase 0.
+We have completed and verified **Phase 6: Embeddings** of the MVP roadmap:
+* Extension UI is polished and detects YouTube videos.
+* Transcript retrieval is working with language fallback.
+* Chat setup is integrated using Google GenAI client.
+* LangChain chunking service extracts document segments with timing metadata.
+* LangChain embedding service generates 768-dimensional vectors using `gemini-embedding-001`.
+
 

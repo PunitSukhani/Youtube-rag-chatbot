@@ -1,9 +1,11 @@
-from app.models.chunk import TranscriptChunk
+from langchain_core.documents import Document
 
-def chunk_transcript(video_id: str, segments: list) -> list[TranscriptChunk]:
+def chunk_transcript(video_id: str, segments: list) -> list[Document]:
     """
     Splits a list of raw timed transcript segments into fixed-size overlapping text chunks
     and maps the starting character index of each chunk back to its original YouTube timestamp.
+    
+    Returns a list of LangChain Document objects ready for vector store indexing.
     
     Target Settings:
     - Chunk Size: 1000 characters
@@ -53,11 +55,13 @@ def chunk_transcript(video_id: str, segments: list) -> list[TranscriptChunk]:
     # we package the whole text as a single chunk starting at the very beginning.
     if text_length <= chunk_size:
         start_time = segments[0].start if segments else 0.0
-        chunks.append(TranscriptChunk(
-            videoId=video_id,
-            chunkId=f"{video_id}_chunk_{chunk_index}",
-            text=full_text,
-            startTime=start_time
+        chunks.append(Document(
+            page_content=full_text,
+            metadata={
+                "videoId": video_id,
+                "chunkId": f"{video_id}_chunk_{chunk_index}",
+                "startTime": start_time
+            }
         ))
         return chunks
 
@@ -83,12 +87,14 @@ def chunk_transcript(video_id: str, segments: list) -> list[TranscriptChunk]:
                 # segments will also be past index `i`, so we can stop searching.
                 break
                 
-        # Build the structured chunk model
-        chunks.append(TranscriptChunk(
-            videoId=video_id,
-            chunkId=f"{video_id}_chunk_{chunk_index}",
-            text=chunk_text,
-            startTime=start_time
+        # Build the LangChain Document object
+        chunks.append(Document(
+            page_content=chunk_text,
+            metadata={
+                "videoId": video_id,
+                "chunkId": f"{video_id}_chunk_{chunk_index}",
+                "startTime": start_time
+            }
         ))
         
         chunk_index += 1
